@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SundaMaritim.id – Konservasi Laut Selat Sunda</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f3f9f8;
+      color: #033b3d;
+    }
+    header {
+      position: fixed;
+      top: 0; right: 0; left: 0;
+      background-color: #027373;
+      color: white;
+      padding: 0.3rem 3%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1001;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+    }
+    header nav a:hover,
+    header .fa-bars:hover{
+    color:#ffd166;
+    }
+    header .fa-bars{
+    font-size: 2.8rem;
+    color:#00b67f;
+    cursor: pointer;
+    display: none;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      background-color: rgba(79, 232, 243, 0.5);
+      padding: 1rem;
+      border-radius: 10px;
+    }
+    .beranda-section {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+    .beranda-content {
+      flex: 1 1 500px;
+      padding: 1rem;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 8px;
+    }
+    .beranda-content h2 {
+      color: #027373;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .beranda-content p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #033b3d;
+      margin-bottom: 1rem;
+    }
+    .beranda-img {
+      flex: 1 1 400px;
+      max-width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .beranda-img img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .cta-text {
+      text-align: center;
+      font-weight: bold;
+      color: #015151;
+      margin-top: 2rem;
+    }
+    .cta-text a {
+      color: #027373;
+      text-decoration: underline;
+    }
+    .clock-container {
+      background-color: #ffffff;
+      padding: 3rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-bottom: 6px solid #00b67f
+    }
+    .clock-container h1{
+      color: #015151;
+    }
+    section {
+      padding: 2rem;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    #map {
+      height: 500px;
+      margin-top: 1rem;
+      border-radius: 10px;
+    }
+    #map { height: 100vh; }
+    .popup-img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 8px;
+    }
+    .tooltip {
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      font-size: 0.85rem;
+    }
+    .data-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
+    }
+    .modal-content {
+      margin: auto;
+      display: block;
+      max-width: 80%;
+      max-height: 80%;
+      border-radius: 5px;
+    }
+    .close {
+      position: absolute;
+      top: 30px;
+      right: 50px;
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .container {
+      width: 1200px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px));
+      gap: 15px;
+      justify-content: start;
+      padding: 20px ;
+    }
+    .gallery-center {
+      display: flex;
+      justify-content: center; /* ⬅️ Ini membuat 2 gambar di tengah */
+      gap: 15px;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+    .image-item {
+      text-align: center;
+    }
+    .image-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    @media (min-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 767px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .image-item p {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #2a744b;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 1rem;
+      flex: 1 1 300px;
+    }
+    .cta-section {
+      background-color: #e0f7fa;
+      padding: 2rem;
+      text-align: center;
+    }
+    .cta-button {
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .cta-button:hover {
+      background-color: #005f8d;
+    }
+    .edu-section {
+      background-color: #ffffff;
+      border-left: 6px solid #0077b6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    .edu-section h3 {
+      color: #023e8a;
+    }
+    .edu-section p {
+      line-height: 1.6;
+    }
+    .edu-highlight {
+      font-style: italic;
+      background-color: #e0f7fa;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    .edu-section .row{
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(25%,1fr));
+      gap: 1rem;
+      margin: 6rem auto;
+      width: 90%;
+    }
+    .video-container {
+      margin-top: 20px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .video-container video {
+      max-width: 800px;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .video-caption {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 8px;
+    }
+    .edu-section .row .box{
+      position: relative;
+      overflow: hidden;
+    }
+    .edu-section .row .box:hover img{
+      transform: translateY(-100%);
+    }
+    .edu-section .row .box img{
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+    .edu-section .row .box:hover .content{
+      transform: translateY(0);
+    }
+    .edu-section .row .box .content{
+      position: absolute;
+      top: 0; left: 0;
+      background:#027373;
+      text-align: center;
+      padding: 1px;
+      height: 100%; width: 100%;
+      transform: translateY(100%);
+      padding-top: 2.5rem;
+    }
+    .edu-section .row .box .content h3{
+      font-size: 1rem;
+    margin: 0 0 10px;
+    line-height: 1.4;
+    color: #ffffff;
+    }
+    .edu-section .row .box .content p{
+      font-size: 0.9rem;
+    color: #ffffff;
+    margin-bottom: 12px;
+    }
+    .edu-section .row .box img,
+    .edu-section .row .box .content {
+      transition: all 0.3s ease-in-out;
+    }
+    .alert-box {
+  position: relative;
+  top: 30px; /* atau coba 10%, tergantung preferensi */
+}
+    .edu-section .row .box .custom-alert {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      justify-content: center;
+      
+    }
+    .edu-section .row .box .alert-box {
+      background: #ffffff;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      font-family: 'Segoe UI', sans-serif;
+      position: relative;
+    }
+
+    .edu-section .row .box .alert-box p {
+      font-size: 1rem;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .edu-section .row .box .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #888;
+      transition: color 0.2s ease-in-out;
+    }
+
+    .edu-section .row .box .close-btn:hover {
+      color: #d33;
+    }
+    .box .content a.btn {
+      display: inline-block;
+      margin-top: 1rem;
+      background: #ffd166;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .box .content a.btn:hover {
+      background: #ffb703;
+    }
+   
+    footer {
+    background-color: #015151;
+    color: white;
+    padding: 2rem 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+.footer-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.footer-contact,
+.footer-links,
+.footer-social,
+.footer-form {
+  flex: 1 1 250px;
+  min-width: 250px;
+}
+
+.footer-credits {
+  text-align: center;
+  flex: 1 1 100%;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+/* Headings */
+.footer-container h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 2px solid white;
+  display: inline-block;
+  padding-bottom: 0.3rem;
+}
+
+/* Kontak dan Sosmed */
+.footer-contact p,
+.footer-links a {
+  margin: 0.4rem 0;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.3s;
+}
+.footer-links a:hover {
+  color: #ffd166;
+}
+
+.social-icons a {
+  color: white;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  transition: transform 0.3s, color 0.3s;
+}
+.social-icons a:hover {
+  transform: scale(1.2);
+  color: #ffd166;
+}
+
+/* Form Kontak */
+.footer-form form {
+  display: flex;
+  flex-direction: column;
+}
+.footer-form input,
+.footer-form textarea {
+  padding: 0.5rem;
+  margin-bottom: 0.7rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.footer-form button {
+  padding: 0.6rem;
+  background-color: #ffd166;
+  border: none;
+  border-radius: 4px;
+  color: #015151;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.footer-form button:hover {
+  background-color: #ffb703;
+}
+
+
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+  
+  </style>
+</head>
+<body>
+  <header>
+    <h2>SundaMaritim.id</h2>
+    <nav>
+      <a href="#beranda">Beranda</a>
+      <a href="#peta">Peta Interaktif</a>
+      <a href="#data">Data</a>
+      <a href="#edukasi">Edukasi</a>
+      <a href="#kontak">Kontak</a>
+    </nav>
+    <i class="fa-solid fa-bars"></i>
+  </header>
+
+  <section id="beranda">
+  <div class="beranda-section">
+    <div class="clock-container">
+      <h1>Pantau Perubahan Laut Kita – Dampak Reklamasi di Pelabuhan Merak</h1>
+      Waktu Saat Ini: <span id="clock"></span>
+    </div>
+    <div class="beranda-img">
+      <img src="Gambar1.jpeg" alt="Pelabuhan Merak">
+      <p class="cta-text">🌊 Suaramu Menyelamatkan Laut – <a href="#kontak">Dukung Gerakan Konservasi Sekarang!</a> 🌱</p>
+    </div>
+    <div class="beranda-content">
+      <h2>Visualisasi Data Oseanografi untuk Konservasi</h2>
+      <p>Selat Sunda, khususnya kawasan Pelabuhan Merak, merupakan wilayah laut yang dinamis dengan karakteristik oseanografi unik seperti kedalaman, kecepatan arus, dan arah pergerakan air laut. Melalui pemantauan data oseanografi, kita dapat melihat perubahan yang terjadi dari tahun ke tahun – baik akibat proses alami maupun intervensi manusia seperti reklamasi dan industrialisasi.</p>
+      <p>Seiring meningkatnya aktivitas industri dan rencana reklamasi oleh pabrik-pabrik di sekitar Pelabuhan Merak, kita menyaksikan penurunan kedalaman laut secara drastis serta gangguan terhadap arah dan kecepatan arus. Hal ini berpotensi mengganggu aktifitas pelabuhan dan mempercepat abrasi ataupun sedimentasi.</p>
+      <p>Penting bagi kita untuk memanfaatkan data oseanografi ini sebagai alat advokasi lingkungan. Dengan menyuarakan bukti perubahan fisik laut secara ilmiah, kita dapat mengajak masyarakat dan pemangku kepentingan lainnya untuk meninjau kembali kebijakan reklamasi.</p>
+      <p>Mari bersama kita jaga laut Selat Sunda, hentikan reklamasi yang merusak, dan jadikan Pelabuhan Merak sebagai contoh sukses konservasi berbasis data.</p>
+
+    </div>
+  </div>
+  </section>
+  
+  <section id="peta">
+    <h2>Peta Interaktif Selat Sunda</h2>
+    <div id="map"></div>
+  </section>
+
+  <section class="cta-section">
+    <h2>Ayo Ambil Bagian dalam Pelestarian Laut!</h2>
+    <p>Laporkan perubahan lingkungan atau dukung kampanye konservasi laut di Selat Sunda.</p>
+    <button class="cta-button" onclick="alert('Form laporan akan dibuka.')">Laporkan Perubahan</button>
+    <button class="cta-button" onclick="alert('Menuju halaman dukungan konservasi.')">Dukung Konservasi Laut</button>
+  </section>
+
+  <section id="data">
+    <h2>Dashboard Data Oseanografi (2020–2024)</h2>
+    <div class="data-section">
+      <div class="card">
+        <h3>Tren Kedalaman Laut</h3>
+        <canvas id="depthChart"></canvas>
+      </div>
+      <div class="card">
+        <h3>Kecepatan & Arah Arus</h3>
+        <canvas id="currentChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Galeri -->
+  <h2>Dashboard Peta Batimetri (2020–2024)</h2>
+  <div class="gallery">
+    <section class="image-item">
+      <p>PETA BATIMERI PELABUHAN MERAK TAHUN 2020</p>
+      <img src="2020.png" alt="Citra 2020" onclick="openModal(this)">
+      <p>Analisis Perubahan Kedalaman 2020</p>
+      <p>- Kedalaman Minimum: -146.00 m</p>
+      <p>- Kedalaman Maksimum: 395.00 m</p>
+      <p>- Kedalaman Rata-rata: -19.67 m</p>
+      <p>- Standar Deviasi: 57.13 m</p>
+    </section>
+    <section class="image-item">
+        <p>PETA BATIMERI PELABUHAN MERAK TAHUN 2021</p>
+        <img src="2021.png" alt="Citra 2020" onclick="openModal(this)">
+        <p>Analisis Perubahan Kedalaman 2021</p>
+        <p>- Kedalaman Minimum: -155.00 m</p>
+        <p>- Kedalaman Maksimum: 395.00 m</p>
+        <p>- Kedalaman Rata-rata: -17.82 m</p>
+        <p>- Standar Deviasi: 57.92 m</p>
+    </section>
+    <section class="image-item">
+      <p>PETA BATIMERI PELABUHAN MERAK TAHUN 2022</p>
+      <img src="2022.png" alt="Citra 2020" onclick="openModal(this)">
+      <p>Analisis Perubahan Kedalaman 2022</p>
+      <p>- Kedalaman Minimum: -164.00 m</p>
+      <p>- Kedalaman Maksimum: 395.00 m</p>
+      <p>- Kedalaman Rata-rata: -21.88 m</p>
+      <p>- Standar Deviasi: 59.87 m</p>
+    </section>
+    <section class="image-item">
+      <p>PETA BATIMERI PELABUHAN MERAK TAHUN 2023</p>
+      <img src="2023.jpeg" alt="Citra 2020" onclick="openModal(this)">
+      <p>Analisis Perubahan Kedalaman 2023</p>
+      <p>- Kedalaman Minimum: -164.00 m</p>
+      <p>- Kedalaman Maksimum: 323.00 m</p>
+      <p>- Kedalaman Rata-rata: -23.35 m</p>
+      <p>- Standar Deviasi: 55.23 m</p>
+    </section>
+    <section class="image-item">
+      <p>PETA BATIMERI PELABUHAN MERAK TAHUN 2024</p>
+      <img src="2024.jpeg" alt="Citra 2020" onclick="openModal(this)">
+      <p>Analisis Perubahan Kedalaman 2024</p>
+      <p>- Kedalaman Minimum: -160.00 m</p>
+      <p>- Kedalaman Maksimum: 172.00 m</p>
+      <p>- Kedalaman Rata-rata: -42.24 m</p>
+      <p>- Standar Deviasi: 42.88 m</p>
+    </section>
+  <!-- ... ulangi untuk gambar lainnya -->
+</div>
+
+<h2>Visualisasi Citra Kedalaman (2020–2024)</h2>
+<div class="gallery">
+  <section class="image-item">
+    <p>Visualisasi Tahun 2020</p>
+    <img src="gabco 2020.jpg" alt="Citra 2020" onclick="openModal(this)">
+  </section>
+
+  <section class="image-item">
+    <p>Visualisasi Tahun 2021</p>
+    <img src="gabco 2021.jpg" alt="Citra 2020" onclick="openModal(this)">
+  </section>
+ 
+    <section class="image-item">
+      <p>Visualisasi Tahun 2022</p>
+      <img src="gabco 2022.jpg" alt="Citra 2020" onclick="openModal(this)">
+    </section>
+  
+    <section class="image-item">
+      <p>Visualisasi Tahun 2023</p>
+      <img src="gabco 2023.jpg" alt="Citra 2020" onclick="openModal(this)">
+    </section>
+  
+    <section class="image-item">
+      <p>Visualisasi Tahun 2024</p>
+      <img src="gabco 2024.jpg" alt="Citra 2020" onclick="openModal(this)">
+    </section>
+</div>
+<!-- Modal untuk gambar besar -->
+<div id="modal" class="modal" onclick="closeModal()">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="modalImage">
+</div>
+    <div class="container">
+      <div class="gallery">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="edukasi-wrapper">
+    <h2>Edukasi dan Dampak Reklamasi</h2>
+    <section id="edukasi" class="edu-section">
+      <h2>Edukasi Reklamasi & Oseanografi</h2>
+      <h3>Apa itu Reklamasi Laut?</h3>
+      <p>Reklamasi adalah proses pengurukan atau penimbunan wilayah perairan seperti laut, rawa, atau muara sungai untuk dijadikan daratan baru yang biasanya dimanfaatkan untuk keperluan pembangunan industri, pemukiman, infrastruktur pelabuhan, atau kawasan ekonomi. Dalam konteks pelabuhan, reklamasi sering dilakukan untuk memperluas area dermaga, membangun gudang logistik, atau menciptakan zona industri maritim yang mendukung kegiatan bongkar muat. Meskipun reklamasi dapat memberikan manfaat ekonomis jangka pendek, proses ini juga memicu perubahan besar pada ekosistem pesisir dan dinamika laut di sekitarnya.</p>
+      <p>Urgensinya terhadap aktivitas pelabuhan terletak pada dua sisi yang bertolak belakang. Di satu sisi, reklamasi dianggap penting untuk meningkatkan kapasitas dan efisiensi pelabuhan, terutama di wilayah dengan keterbatasan lahan daratan. Penambahan area dapat mendukung pertumbuhan volume perdagangan dan pelayaran, serta membuka peluang investasi. Namun di sisi lain, reklamasi dapat mengganggu stabilitas lingkungan laut dengan mengubah pola arus, mempersempit alur pelayaran, dan menyebabkan sedimentasi berlebihan. Hal ini berpotensi mengganggu keselamatan pelayaran kapal, memperbesar risiko kandas, serta menambah biaya pemeliharaan alur pelayaran melalui pengerukan berkala.</p>
+      <p>Oleh karena itu, reklamasi harus dilihat secara kritis, bukan hanya sebagai proyek pembangunan, tetapi sebagai intervensi besar terhadap ekosistem pesisir. Pelabuhan merupakan simpul vital mobilitas barang dan manusia, sehingga kualitas dan keamanan perairannya harus dijaga. Reklamasi tanpa kajian lingkungan yang matang dapat menyebabkan kerusakan jangka panjang seperti penurunan kualitas air, rusaknya habitat biota laut, hingga konflik sosial dengan masyarakat pesisir. Maka, keberlanjutan aktivitas pelabuhan harus seimbang antara kebutuhan pengembangan fisik dan konservasi lingkungan pesisir secara ilmiah dan terpadu.</p>
+      <h3>Dampak Reklamasi terhadap Abrasi dan Sedimentasi</h3>
+      <p>Reklamasi yang dilakukan tanpa kajian lingkungan yang matang akan mempercepat proses <span class="edu-highlight">abrasi</span> di pesisir. <span class="edu-highlight">Abrasi</span> adalah terkikisnya daratan oleh gelombang laut yang kuat, dan reklamasi memperparah ini dengan mengubah pola alami arus laut. Akibatnya, garis pantai akan semakin mundur, mengancam permukiman, infrastruktur, dan ekosistem pesisir. Kondisi ini tidak hanya merugikan lingkungan, tetapi juga ekonomi masyarakat yang bergantung pada laut. Mari kita sadari bahwa menjaga garis pantai berarti melindungi kehidupan pesisir dan keberlanjutan sumber daya laut kita.</p>
+      <p>Selain abrasi, reklamasi juga memicu <span class="edu-highlight">sedimentasi</span> berlebihan di area tertentu. <span class="edu-highlight">Sedimentasi</span> ini menyebabkan perairan menjadi dangkal, memperburuk jalur pelayaran, mengganggu habitat ikan, dan mengancam produktivitas sektor perikanan. Jika kita terus membiarkan reklamasi tanpa kontrol, maka masa depan laut kita akan semakin terancam. Saatnya kita bersama mendorong pengelolaan pesisir yang bijak dan berkelanjutan, demi memastikan laut tetap menjadi sumber kehidupan, bukan korban dari keserakahan manusia.</p>
+
+      <h3>Studi Kasus: Pelabuhan Merak</h3>
+      <p>Studi kami menunjukkan bahwa reklamasi di Pelabuhan Merak menyebabkan penurunan kedalaman laut dari -17.82 m pada 2021 menjadi -42.24 m pada 2024. Kecepatan dan arah arus laut pun berubah signifikan, mengindikasikan redistribusi sedimen dan peningkatan abrasi di titik-titik sekitar reklamasi.</p>
+
+      <div class="video-container">
+        <h4>Video Animasi Perubahan Kedalaman dan Arus Laut (2020–2024)</h4>
+        <video controls width="100%" poster="thumbnail-video.jpg">
+          <source src="video-animasi-reklamasi.mp4" type="video/mp4">
+          Browser Anda tidak mendukung video ini.
+        </video>
+        <p class="video-caption">Video ini menunjukkan tren perubahan batimetri dan arah arus laut di Pelabuhan Merak selama periode 2020–2024 akibat reklamasi.</p>
+      </div>
+    
+      <div class="row">
+        <div class="box">
+          <img src="PLTU.jpeg" alt="image">
+          <div class="content">
+            <h3>
+              Reklamasi Kawasan PLTU Suralaya Terkait Pengembangan Unit 9 dan Unit 10
+            </h3>
+            <p>Tahun: 2020 - 2025</p>
+            <a href="#" class="btn" id="read1">Read</a>
+          </div>
+  
+          <!-- Custom Alert -->
+          <div class="custom-alert" id="alert1">
+            <div class="alert-box">
+              <span class="close-btn" onclick="closeAlert('alert1')">&times;</span>
+              <p>
+                PLTU Suralaya merupakan pembangkit listrik tenaga uap yang berlokasi di wilayah Banten, Indonesia. Pengembangan Unit 9 dan Unit 10 di PLTU Suralaya merupakan upaya untuk meningkatkan kapasitas pembangkit listrik dengan menambah dua unit pembangkit berkapasitas besar. Unit 9 dan 10 ini dirancang untuk memperkuat pasokan listrik di wilayah Jawa dan Bali, serta mendukung pemenuhan kebutuhan energi yang terus berkembang. Reklamasi kawasan sekitar PLTU Suralaya dilakukan untuk menyediakan ruang bagi pembangunan fasilitas penunjang pembangkit dan pelabuhan yang lebih besar, yang diharapkan dapat mendukung operasional dan distribusi energi yang lebih efisien.
+              </p>
+              <p>Namun, reklamasi kawasan PLTU Suralaya dapat menimbulkan dampak negatif terhadap lingkungan pesisir, terutama di sekitar Pelabuhan Merak. Proyek reklamasi berisiko meningkatkan sedimentasi dan abrasi, yang dapat mempengaruhi ekosistem laut dan kualitas perairan di sekitar pelabuhan. Selain itu, perubahan kedalaman laut dan pengalihan aliran air dapat berdampak pada kegiatan pelayaran dan penangkapan ikan di kawasan tersebut. Jika tidak dikelola dengan hati-hati, reklamasi ini dapat mengganggu keberlanjutan ekosistem pesisir yang sudah ada dan mempengaruhi aktivitas ekonomi yang bergantung pada sumber daya laut di sekitar Pelabuhan Merak.</p>
+            </div>
+          </div>
+        </div>
+      
+      
+        <div class="box">
+          <img src="dermaga IV.jpeg" alt="image">
+          <div class="content">
+            <h3>
+              Pembangunan Dermaga IV Pelabuhan Penyeberangan Merak–Bakauheni oleh PT ASDP Indonesia Ferry 
+            </h3>
+            <p>Tahun : 2020</p>
+            <a href="#" class="btn" id="read2">Read</a>
+          </div>
+  
+          <!-- Custom Alert -->
+          <div class="custom-alert" id="alert2">
+            <div class="alert-box">
+              <span class="close-btn" onclick="closeAlert('alert2')">&times;</span>
+              <p>
+                Pembangunan Dermaga IV Pelabuhan Penyeberangan Merak–Bakauheni oleh PT ASDP Indonesia Ferry dimulai pada awal tahun 2020 sebagai bagian dari upaya meningkatkan kapasitas dan efisiensi layanan penyeberangan tersibuk di Indonesia tersebut. Proyek ini merupakan kelanjutan dari pengembangan infrastruktur penyeberangan yang vital untuk konektivitas antar-pulau, khususnya antara Pulau Jawa dan Sumatra. Dermaga IV dibangun dengan konstruksi struktur darat dan laut, termasuk pemancangan, betonisasi, serta fasilitas pendukung lainnya, dan berhasil diselesaikan pada Oktober 2020.</p>
+              <p>Pembangunan ini secara umum bertujuan untuk mengurangi antrean kendaraan, meningkatkan kelancaran arus logistik, dan mempercepat waktu bongkar muat kapal. Namun, di sisi lain, proses konstruksi yang melibatkan pengerukan dan pengurukan berdampak terhadap lingkungan pesisir di sekitarnya. Aktivitas ini menyebabkan perubahan arus laut dan redistribusi sedimen, yang secara tidak langsung memicu pendangkalan di beberapa area perairan sekitar Pelabuhan Merak. Oleh karena itu, meskipun proyek ini membawa manfaat dari sisi transportasi dan ekonomi, tetap diperlukan pemantauan terhadap dampak lingkungannya agar keberlanjutan kawasan pesisir tetap terjaga.</p>
+            </div>
+          </div>
+        </div>
+      
+      
+        <div class="box">
+          <img src="LOTE.jpeg" alt="image">
+          <div class="content">
+            <h3>
+              Pembangunan Proyek Reklamasi Selat Sunda dilakukan PT Lotte Chemical Indonesia (LCI) 
+            </h3>
+            <p>Tahun: 2020 - 2025</p>
+            <a href="#" class="btn" id="read3">Read</a>
+          </div>
+  
+          <!-- Custom Alert -->
+          <div class="custom-alert" id="alert3">
+            <div class="alert-box">
+              <span class="close-btn" onclick="closeAlert('alert3')">&times;</span>
+              <p>
+                Pada tahun 2019, PT Lotte Chemical Indonesia (LCI) melaksanakan proyek reklamasi di kawasan Selat Sunda dengan tujuan memperluas fasilitas pelabuhan miliknya. Reklamasi ini mencakup area seluas 12 hektare dan dirancang untuk menunjang aktivitas logistik serta distribusi industri kimia yang dikembangkan oleh perusahaan. Dengan adanya perluasan ini, LCI berharap dapat meningkatkan efisiensi operasional pelabuhan sekaligus mendukung pertumbuhan kapasitas produksi mereka di kawasan tersebut.
+              </p>
+              <p>Namun, proyek reklamasi ini juga menimbulkan berbagai perhatian terhadap dampak lingkungan yang mungkin terjadi, seperti perubahan pada ekosistem pesisir, peningkatan sedimentasi, dan perubahan arus laut di sekitar wilayah reklamasi. Pembangunan ini menunjukkan bagaimana pertumbuhan industri harus mempertimbangkan keseimbangan antara kebutuhan ekspansi ekonomi dan pelestarian lingkungan, agar manfaat jangka panjang dapat dirasakan tanpa merusak keberlanjutan sumber daya alam di kawasan Selat Sunda.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+        </section>
+</section>
+
+<footer id="kontak">
+  <div class="footer-container">
+
+    <!-- Informasi Kontak -->
+    <div class="footer-contact">
+      <h3>Kontak Kami</h3>
+      <p><i class="fas fa-map-marker-alt"></i> Jl. Samudera No.123, Serang, Banten</p>
+      <p><i class="fas fa-envelope"></i> info@sundamaritim.id</p>
+      <p><i class="fas fa-phone"></i> +62 812-3456-7890</p>
+    </div>
+
+    <!-- Navigasi -->
+    <div class="footer-links">
+      <h3>Menu Navigasi</h3>
+      <a href="#beranda">Beranda</a>
+      <a href="#peta">Peta Interaktif</a>
+      <a href="#data">Data</a>
+      <a href="#edukasi">Edukasi</a>
+      <a href="#kontak">Kontak</a>
+    </div>
+
+    <!-- Media Sosial -->
+    <div class="footer-social">
+      <h3>Ikuti Kami</h3>
+      <div class="social-icons">
+        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+      </div>
+    </div>
+
+    <!-- Form Kontak -->
+    <div class="footer-form">
+      <h3>Kirim Pesan</h3>
+      <form>
+        <input type="text" placeholder="Nama Anda" required>
+        <input type="email" placeholder="Email Anda" required>
+        <textarea rows="3" placeholder="Pesan Anda" required></textarea>
+        <button type="submit">Kirim</button>
+      </form>
+    </div>
+
+    <!-- Hak Cipta -->
+    <div class="footer-credits">
+      <p>&copy; 2025 <strong>SundaMaritim.id</strong><br>Dibangun untuk pelestarian Selat Sunda</p>
+    </div>
+  </div>
+</footer>
+
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+     // Jam real-time
+     function updateClock() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString('id-ID');
+      document.getElementById('clock').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // Inisialisasi peta
+    const map = L.map('map').setView([-5.935, 105.98], 12); // Fokus ke Merak
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  const locations = [
+    {
+      name: "Pelabuhan Dermaga IV Merak",
+      lat: -5.939,
+      lon: 105.99,
+      img: "eksekutif.png", // Ganti dengan URL/file path gambar
+      data: [
+        { tahun: 2020, kedalaman: -19.5, arus: 1.49, arah: 173 },
+        { tahun: 2021, kedalaman: -20.2, arus: 1.51, arah: 175 },
+        { tahun: 2022, kedalaman: -22.1, arus: 1.52, arah: 178 },
+        { tahun: 2023, kedalaman: -24.3, arus: 1.50, arah: 180 },
+        { tahun: 2024, kedalaman: -26.0, arus: 1.53, arah: 182 }
+      ]
+    },
+    {
+      name: "Lotte Merak",
+      lat: -5.967,
+      lon: 105.98,
+      img: "lotte.png",
+      data: [
+        { tahun: 2020, kedalaman: -18.7, arus: 1.47, arah: 170 },
+        { tahun: 2021, kedalaman: -19.9, arus: 1.48, arah: 174 },
+        { tahun: 2022, kedalaman: -22.5, arus: 1.51, arah: 177 },
+        { tahun: 2023, kedalaman: -25.1, arus: 1.52, arah: 181 },
+        { tahun: 2024, kedalaman: -29.3, arus: 1.54, arah: 185 }
+      ]
+    },
+    {
+      name: "PLTU Suralaya",
+      lat: -5.894,
+      lon: 106.01,
+      img: "pltu.png",
+      data: [
+        { tahun: 2020, kedalaman: -20.0, arus: 1.48, arah: 172 },
+        { tahun: 2021, kedalaman: -21.0, arus: 1.49, arah: 176 },
+        { tahun: 2022, kedalaman: -24.2, arus: 1.51, arah: 179 },
+        { tahun: 2023, kedalaman: -26.4, arus: 1.52, arah: 183 },
+        { tahun: 2024, kedalaman: -30.0, arus: 1.56, arah: 188 }
+      ]
+    }
+  ];
+
+  locations.forEach(loc => {
+    const marker = L.marker([loc.lat, loc.lon]).addTo(map);
+
+    let popupContent = `<div><strong>${loc.name}</strong><br>`;
+    popupContent += `<img src="${loc.img}" alt="${loc.name}" class="popup-img"/>`;
+    loc.data.forEach(d => {
+      popupContent += `<b>${d.tahun}</b> — Kedalaman: ${d.kedalaman} m, Arus: ${d.arus} m/s, Arah: ${d.arah}°<br>`;
+    });
+    popupContent += `</div>`;
+
+    marker.bindPopup(popupContent);
+  });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const depthCtx = document.getElementById('depthChart').getContext('2d');
+    new Chart(depthCtx, {
+      type: 'line',
+      data: {
+        labels: [2020, 2021, 2022, 2023, 2024],
+        datasets: [{
+          label: 'Kedalaman (m)',
+          data: [-20, -18, -22, -23.5, -42],
+          borderColor: '#027373',
+          backgroundColor: 'rgba(2, 115, 115, 0.2)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' }, title: { display: false } }
+      }
+    });
+
+    const currentCtx = document.getElementById('currentChart').getContext('2d');
+    new Chart(currentCtx, {
+      type: 'bar',
+      data: {
+        labels: [ 2020, 2021, 2022, 2023, 2024],
+        datasets: [
+          {
+            label: 'Kecepatan Arus (m/s)',
+            data: [1.49, 1.5, 1.52, 1.48, 1.53],
+            backgroundColor: '#56b4b3'
+          },
+          {
+            label: 'Arah Arus (°)',
+            data: [184.35, 173.80, 175.64, 176.03, 183.43, 190.49],
+            backgroundColor: '#fc9272'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: false }
+        },
+        plugins: {
+          title: {
+            display: false
+          }
+        }
+      }
+    });
+    
+  document.getElementById("read1").addEventListener("click", function(event) {
+    event.preventDefault();
+    document.getElementById("alert1").style.display = "flex";
+  });
+
+  function closeAlert(id) {
+    document.getElementById(id).style.display = "none";
+  }
+  document.getElementById("read2").addEventListener("click", function(event) {
+    event.preventDefault();
+    document.getElementById("alert2").style.display = "flex";
+  });
+
+  function closeAlert(id) {
+    document.getElementById(id).style.display = "none";
+  }
+  document.getElementById("read3").addEventListener("click", function(event) {
+    event.preventDefault();
+    document.getElementById("alert3").style.display = "flex";
+  });
+
+  function closeAlert(id) {
+    document.getElementById(id).style.display = "none";
+  }
+
+
+
+
+function openModal(img) {
+  var modal = document.getElementById("modal");
+  var modalImg = document.getElementById("modalImage");
+  modal.style.display = "block";
+  modalImg.src = img.src;
+}
+
+function closeModal() {
+  var modal = document.getElementById("modal");
+  modal.style.display = "none";
+}
+  </script>
+</body>
+</html>
